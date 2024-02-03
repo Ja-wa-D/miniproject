@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>MISFITS: Talk to strangers!</title>
+	<link rel="icon" type="image/jpg" href="img/epsile_text.jpg">
+	<link rel="stylesheet/less" type="text/css" href="style/epsile.less">
+	<script>
+		var less = {
+			env: "development"
+		};
+	</script>
+	<script src="js/lib/less-1.7.0.min.js"></script>
+</head>
+<body>
+
+<section id="container">
+	<section id="chatWindow">
+		<section id="chatMain">
+			<div id="chatMainDiv"></div>
+		</section>
+		
+		<div id="isTypingDiv" class="consoleChat">Stranger&nbsp;is&nbsp;typing...</div>
+		
+		<section id="panelRow">
+			
+			<input type=button value="Disconnect" id="disconnectButton" disabled>
+			<div id="chatAreaWrap">
+				<textarea id="chatArea" disabled="disabled"></textarea>
+			</div>
+		</section>
+	
+		<section id="peopleOnlineSection">
+			<span id="peopleOnlineSpan">0</span> online
+		</section>
+	</section>
+
+	<section id="welcomeScreen">
+	
+		<section id="startButtonDiv"><div>
+			<div id="description">
+				This mini project is a simple chat website, where people get connected to other people, in a one-to-one chat.<br>
+				If everyone is paired up, you must wait until someone finish a conversation. Chats are anonymous,<br>
+				meaning that the strangers you chat with don't know anything about you (unless you describe yourself).
+			</div>
+			<br>
+			<input type=button value="Start chatting!" onclick="Epsile.startChat();" class="button" id="startButton" disabled>
+		</div></section>
+		
+		<header>
+		  <image width="150px" height ="80px" src="img/misfits_logo.png" >
+		</header>
+
+		<footer>
+			hohoho have a great day nigga sar!
+		</footer>
+	
+	</section>
+</section>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="js/epsile.js"></script>
+</body>
+</html>
