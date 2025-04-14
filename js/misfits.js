@@ -183,7 +183,7 @@ var Misfits = new function () {
 			if(firstNotify && notify > 0 && window.webkitNotifications.checkPermission() === 0) {
 				clearTimeout(notifyTimer);
 				if(lastNotify) lastNotify.cancel();
-				lastNotify = window.webkitNotifications.createNotification('img/misfits_logo32.png', 'Misfits'+(type===0?' Message':''), who2+message2);
+				lastNotify = window.webkitNotifications.createNotification('img/misfits_logo48.png', 'Misfits'+(type===0?' Message':''), who2+message2);
 				lastNotify.show();
 				firstNotify = false;
 				notifyTimer = setTimeout(function () {
