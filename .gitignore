@@ -1,3 +1,8 @@
+<<<<<<< HEAD
 svg/
 node_modules/
+=======
+svg/
+node_modules/
+>>>>>>> master
 .DS_Store
