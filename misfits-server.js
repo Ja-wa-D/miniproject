@@ -10,16 +10,19 @@ var port = 8001;
 var express = require('express');
 var app = express();
 var server = require('http').createServer(app);
-var io = require('socket.io').listen(server);
+var io = require('socket.io')(server);
 
 server.listen(port, function () {
 	console.log('epsile server listening at port %d', port);
 });
 
-app.use(express.compress());
+//app.use(express.compress());
 app.use(express.static(__dirname + '/'));
 
-io.set('log level', 1);
+var io = require('socket.io')(server, {
+	log: 1
+  });
+  
 
 // global variables, keeps the state of the app
 var sockets = {},
