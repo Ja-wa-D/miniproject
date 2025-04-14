@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// epsile server
+// misfits server
 // created by djazz
 'use strict';
 
@@ -13,7 +13,7 @@ var server = require('http').createServer(app);
 var io = require('socket.io')(server);
 
 server.listen(port, function () {
-	console.log('epsile server listening at port %d', port);
+	console.log('misfits server listening at port %d', port);
 });
 
 //app.use(express.compress());
@@ -146,4 +146,3 @@ io.sockets.on('connection', function (socket) {
 		
 	});
 });
-
