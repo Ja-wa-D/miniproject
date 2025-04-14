@@ -23,19 +23,39 @@ function App() {
   const [isTyping, setIsTyping] = useState(false);
   const [onlineCount, setOnlineCount] = useState(0);
   const [chatStarted, setChatStarted] = useState(false);
+  const [isPaired, setIsPaired] = useState(false);
 
   useEffect(() => {
-    if (chatStarted && !socket) {
-      const newSocket = io('http://localhost:8001');
+    let socket = null;
+    
+    if (chatStarted) {
+      // Create socket connection
+      const newSocket = io('http://localhost:8001', {
+        transports: ['websocket'],
+        reconnection: true,
+        reconnectionAttempts: Infinity,
+        reconnectionDelay: 1000,
+        timeout: 20000,
+        autoConnect: true
+      });
       
       newSocket.on('connect', () => {
-        setConnected(true);
         console.log('Connected to server');
+        setConnected(true);
+        // Automatically try to find a chat partner when connected
+        newSocket.emit('new');
       });
 
       newSocket.on('disconnect', () => {
-        setConnected(false);
         console.log('Disconnected from server');
+        setConnected(false);
+        setIsPaired(false);
+        setMessages(prev => [...prev, { text: 'Disconnected from server. Trying to reconnect...', isStranger: true }]);
+      });
+
+      newSocket.on('connect_error', (error) => {
+        console.log('Connection error:', error);
+        setMessages(prev => [...prev, { text: 'Connection error. Please try again...', isStranger: true }]);
       });
 
       newSocket.on('chat', (message) => {
@@ -50,31 +70,60 @@ function App() {
         setOnlineCount(count);
       });
 
-      setSocket(newSocket);
+      newSocket.on('conn', () => {
+        setIsPaired(true);
+        setMessages(prev => [...prev, { text: 'Connected to a stranger!', isStranger: true }]);
+      });
 
+      newSocket.on('disconn', (data) => {
+        setIsPaired(false);
+        if (data && data.who === 2) {
+          setMessages(prev => [...prev, { text: 'Stranger disconnected.', isStranger: true }]);
+          // Automatically try to find a new partner
+          newSocket.emit('new');
+          setMessages(prev => [...prev, { text: 'Looking for a new chat partner...', isStranger: true }]);
+        }
+      });
+
+      socket = newSocket;
+      setSocket(newSocket);
+      
+      // Emit new chat request after a short delay
+      const timer = setTimeout(() => {
+        if (socket && socket.connected) {
+          socket.emit('new');
+        }
+      }, 1000);
+      
       return () => {
-        newSocket.close();
+        clearTimeout(timer);
+        if (socket) {
+          socket.disconnect();
+        }
       };
     }
   }, [chatStarted]);
 
   const handleStartChat = () => {
+    setMessages([]); // Clear any previous messages
     setChatStarted(true);
   };
 
   const handleSendMessage = (message) => {
-    if (socket && connected) {
+    if (socket && connected && isPaired) {
       socket.emit('chat', message);
       setMessages(prev => [...prev, { text: message, isStranger: false }]);
     }
   };
 
   const handleDisconnect = () => {
-    if (socket) {
-      socket.disconnect();
-      setMessages([]);
-      setChatStarted(false);
-      setSocket(null);
+    if (socket && connected) {
+      if (isPaired) {
+        socket.emit('disconn');
+        setIsPaired(false);
+      }
+      socket.emit('new');
+      setMessages(prev => [...prev, { text: 'Looking for someone to chat with...', isStranger: true }]);
     }
   };
 
@@ -89,8 +138,9 @@ function App() {
             isTyping={isTyping}
             onlineCount={onlineCount}
             onSendMessage={handleSendMessage}
-            connected={connected}
+            connected={connected && isPaired}
             onDisconnect={handleDisconnect}
+            disconnectButtonText={isPaired ? 'Disconnect' : 'New Chat'}
           />
         )}
       </Container>

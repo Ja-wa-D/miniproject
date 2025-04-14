@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Paper, Typography } from '@mui/material';
+import { Paper, Typography, Button } from '@mui/material';
 import {
   ChatContainer,
   MessageArea,
@@ -15,7 +15,8 @@ const ChatWindow = ({
   onlineCount,
   onSendMessage,
   connected,
-  onDisconnect
+  onDisconnect,
+  disconnectButtonText = 'Disconnect'
 }) => {
   const messagesEndRef = useRef(null);
 
@@ -30,6 +31,14 @@ const ChatWindow = ({
   return (
     <Paper elevation={3} sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       <ChatContainer>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={onDisconnect}
+          sx={{ margin: '10px' }}
+        >
+          {disconnectButtonText}
+        </Button>
         <MessageArea>
           {messages.map((msg, index) => (
             <Message key={index} isStranger={msg.isStranger}>
