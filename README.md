@@ -8,7 +8,7 @@ misfits — Anonymous One-to-One Chat 💬
 
 1️⃣ Clone this repository:
 
-git clone https://github.com/your-username/misfits.git
+git clone [https://github.com/your-username/misfits.git](https://github.com/Ja-wa-D/miniproject.git)
 cd misfits
 
 2️⃣ Install dependencies:
