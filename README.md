@@ -1,12 +1,15 @@
 misfits — Anonymous One-to-One Chat 💬
 
-💡 misfits is an open-source, anonymous one-to-one chat app inspired by Omegle — built using Node.js, Express, and Socket.io. Chat with strangers, exchange thoughts, or just vibe — all without revealing your identity.
+
+
+    💡 misfits is an open-source, anonymous one-to-one chat app inspired by Omegle — built using Node.js, Express, and Socket.io. Chat with strangers, exchange thoughts, or just vibe — all without revealing your identity.
 
 💻 Installation & Local Setup
 
 1️⃣ Clone this repository:
 
-git clone https://github.com/your-username/misfits.git cd misfits
+git clone [https://github.com/your-username/misfits.git](https://github.com/Ja-wa-D/miniproject.git)
+cd misfits
 
 2️⃣ Install dependencies:
 
@@ -20,34 +23,35 @@ node misfits-server
 
 http://localhost:8001/
 
-Your anonymous chat app will be live on your local machine! ✨ Features
+Your anonymous chat app will be live on your local machine!
+✨ Features
 
-💬 Chat with a random stranger.
+    💬 Chat with a random stranger.
 
-🔔 Get popup notifications if the tab isn’t focused.
+    🔔 Get popup notifications if the tab isn’t focused.
 
-🌐 Clickable links (opens in new tabs — stay cautious!).
+    🌐 Clickable links (opens in new tabs — stay cautious!).
 
-🎭 /me command for action-style messages: /me ate a cookie
-Displays as: *** Stranger ate a cookie
+    🎭 /me command for action-style messages: /me ate a cookie
+    Displays as: *** Stranger ate a cookie
 
 🧠 TODO
 
-Add interests for better stranger matching.
+    Add interests for better stranger matching.
 
-Integrate with Omegle’s real stranger pool.
+    Integrate with Omegle’s real stranger pool.
 
-Custom themes (light/dark modes).
+    Custom themes (light/dark modes).
 
-Question mode for topic-based discussions.
+    Question mode for topic-based discussions.
 
-Shared drawing surface for collaborations.
+    Shared drawing surface for collaborations.
 
-Explore webcam and voice support.
+    Explore webcam and voice support.
 
-Improved URL detection.
+    Improved URL detection.
 
-Audio alerts and tab title notifications.
+    Audio alerts and tab title notifications.
 
 📝 License
 
