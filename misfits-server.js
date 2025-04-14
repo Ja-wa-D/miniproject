@@ -1,6 +1,5 @@
-#!/usr/bin/env node
+
 // misfits server
-// created by djazz
 'use strict';
 
 // config
@@ -10,26 +9,59 @@ var port = 8001;
 var express = require('express');
 var app = express();
 var server = require('http').createServer(app);
-var io = require('socket.io')(server);
+var io = require('socket.io')(server, {
+	cors: {
+		origin: true,
+		methods: ["GET", "POST"],
+		credentials: false
+	},
+	pingTimeout: 60000,
+	pingInterval: 25000
+});
 
 server.listen(port, function () {
 	console.log('misfits server listening at port %d', port);
 });
 
-//app.use(express.compress());
 app.use(express.static(__dirname + '/'));
 
-var io = require('socket.io')(server, {
-	log: 1
-  });
-  
-
 // global variables, keeps the state of the app
-var sockets = {},
-	users = {},
-	strangerQueue = false,
-	peopleActive = 0,
-	peopleTotal = 0;
+var sockets = {};
+var users = {};
+var strangerQueue = false;
+var peopleActive = 0;
+var peopleTotal = 0;
+
+// Clean up function to remove disconnected users
+function cleanupUser(socketId) {
+    if (users[socketId]) {
+        const connectedTo = users[socketId].connectedTo;
+        
+        // If user was connected to someone
+        if (connectedTo !== -1 && users[connectedTo]) {
+            users[connectedTo].connectedTo = -1;
+            if (sockets[connectedTo]) {
+                sockets[connectedTo].emit('disconn', { who: 2 });
+            }
+        }
+        
+        // Clear from queue if needed
+        if (strangerQueue === socketId) {
+            strangerQueue = false;
+        }
+        
+        // Remove user data
+        delete users[socketId];
+        delete sockets[socketId];
+        
+        if (peopleActive > 0) peopleActive--;
+        if (peopleTotal > 0) peopleTotal--;
+        
+        // Update all clients with new count
+        io.sockets.emit('online', Math.max(0, peopleActive));
+        console.log(timestamp(), Math.max(0, peopleActive), 'users online');
+    }
+}
 
 // helper functions, for logging
 function fillZero (val) {
@@ -43,56 +75,69 @@ function timestamp () {
 
 // listen for connections
 io.sockets.on('connection', function (socket) {
-	
-	// store the socket and info about the user
-	sockets[socket.id] = socket;
-	users[socket.id] = {
-		connectedTo: -1,
-		isTyping: false
-	};
-	
-	// count total and active users
-	peopleTotal++;
-	peopleActive++;
-	
-	// broadcast the counts to all clients
-	io.sockets.emit('online', peopleActive);
+    console.log(timestamp(), 'New connection:', socket.id);
 
-	// connect the user to another if strangerQueue isn't empty
-	if (strangerQueue !== false) {
-		users[socket.id].connectedTo = strangerQueue;
-		users[socket.id].isTyping = false;
-		users[strangerQueue].connectedTo = socket.id;
-		users[strangerQueue].isTyping = false;
-		socket.emit('conn');
-		sockets[strangerQueue].emit('conn');
-		strangerQueue = false;
-		
-	} else {
-		strangerQueue = socket.id;
-	}
+    // Handle reconnection - cleanup any existing session
+    if (users[socket.id]) {
+        cleanupUser(socket.id);
+    }
+    
+    // store the socket and info about the user
+    sockets[socket.id] = socket;
+    users[socket.id] = {
+        connectedTo: -1,
+        isTyping: false
+    };
+    
+    // count total and active users
+    peopleTotal++;
+    peopleActive++;
+    
+    // broadcast the counts to all clients
+    io.sockets.emit('online', peopleActive);
+    console.log(timestamp(), peopleTotal, 'total,', peopleActive, 'active');
 
-	peopleActive++;
-	peopleTotal++;
-	console.log(timestamp(), peopleTotal, "connect");
-	io.sockets.emit('online', peopleActive);
+	// When a new user connects, they start in queue
+	strangerQueue = socket.id;
+	
+	// Emit a welcome message
+	socket.emit('chat', 'Welcome! Click "New" to start chatting with someone.');
 
 	socket.on("new", function () {
+		console.log(timestamp(), socket.id, 'requested new chat');
 		
-		// Got data from someone
-		if (strangerQueue !== false) {
+		// If already connected to someone, disconnect first
+		if (users[socket.id].connectedTo !== -1) {
+			var oldConn = users[socket.id].connectedTo;
+			if (sockets[oldConn]) {
+				users[oldConn].connectedTo = -1;
+				sockets[oldConn].emit('disconn', { who: 2 });
+			}
+			users[socket.id].connectedTo = -1;
+		}
+
+		// If someone is waiting in queue
+		if (strangerQueue !== false && strangerQueue !== socket.id && users[strangerQueue] && users[strangerQueue].connectedTo === -1) {
+			// Connect to the person in queue
 			users[socket.id].connectedTo = strangerQueue;
 			users[strangerQueue].connectedTo = socket.id;
 			users[socket.id].isTyping = false;
 			users[strangerQueue].isTyping = false;
+			
+			// Notify both users
 			socket.emit('conn');
 			sockets[strangerQueue].emit('conn');
+			
+			console.log(timestamp(), socket.id, 'connected to', strangerQueue);
+			
+			// Clear queue
 			strangerQueue = false;
 		} else {
+			// No one in queue, join queue
 			strangerQueue = socket.id;
+			socket.emit('chat', 'Waiting for someone to connect...');
+			console.log(timestamp(), socket.id, 'joined queue');
 		}
-		peopleActive++;
-		io.sockets.emit('online', peopleActive);
 	});
 	
 	// Conversation ended
@@ -125,31 +170,8 @@ io.sockets.on('connection', function (socket) {
 	});
 
 	socket.on("disconnect", function (err) {
-		// Someone disconnected, ctoed or was kicked
-		var connTo = (users[socket.id] && users[socket.id].connectedTo);
-		if (connTo === undefined) {
-			connTo = -1;
-		}
-		if (connTo !== -1 && sockets[connTo]) {
-			sockets[connTo].emit("disconn", {who: 2, reason: err && err.toString()});
-			users[connTo].connectedTo = -1;
-			users[connTo].isTyping = false;
-			peopleActive--;
-		}
-
-		delete sockets[socket.id];
-		delete users[socket.id];
-
-		if (strangerQueue === socket.id || strangerQueue === connTo) {
-			strangerQueue = false;
-		}
-		peopleActive--;
-		peopleTotal--;
-		
-		// Broadcast updated count to all clients
-		io.sockets.emit('online', peopleActive);
+		console.log(timestamp(), socket.id, 'disconnected');
+		cleanupUser(socket.id);
 		console.log(timestamp(), peopleActive, "users online");
-		io.sockets.emit('online', peopleActive);
-		
 	});
 });

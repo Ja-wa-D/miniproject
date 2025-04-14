@@ -1,34 +1,72 @@
 #chatWindow {
-	background-image: url('svg/chatWindow.svg');
+	background: #f5f5f5;
+	border-radius: 8px;
+	box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
+
 #chatArea {
-	background-image: url('svg/chatArea.svg');
+	background: white;
+	border: 1px solid #e0e0e0;
+	border-radius: 4px;
 }
+
 #disconnectButton {
-	background-image: url('svg/disconnectButton.svg');
+	background: #ff4444;
+	color: white;
+	border: none;
+	border-radius: 4px;
+	padding: 8px 16px;
+	transition: background 0.2s;
 }
+
 #disconnectButton:active {
-	background-image: url('svg/disconnectButtonActive.svg');
+	background: #cc0000;
 }
+
 #disconnectButton:disabled {
-	background-image: url('svg/disconnectButtonDisabled.svg');
+	background: #ffaaaa;
+	cursor: not-allowed;
 }
 
 #welcomeScreen {
-	background-image: url('svg/welcomeScreen.svg');
+	background: linear-gradient(135deg, #6e8efb, #4a6cf7);
+	color: white;
+	text-align: center;
+	padding: 40px;
+	border-radius: 8px;
 }
+
 header {
-	background-image: url('svg/header.svg');
+	background: #4a6cf7;
+	color: white;
+	padding: 16px;
+	box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
+
 .button {
-	background-image: url('svg/button.svg');
+	background: #4a6cf7;
+	color: white;
+	border: none;
+	border-radius: 4px;
+	padding: 10px 20px;
+	transition: all 0.2s;
+	cursor: pointer;
 }
+
 .button:hover {
-	background-image: url('svg/buttonHover.svg');
+	background: #6e8efb;
+	transform: translateY(-1px);
+	box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
+
 .button:active {
-	background-image: url('svg/buttonActive.svg');
+	background: #3451c6;
+	transform: translateY(0);
 }
+
 .button:disabled {
-	background-image: url('svg/buttonDisabled.svg');
+	background: #c5c5c5;
+	cursor: not-allowed;
+	transform: none;
+	box-shadow: none;
 }
