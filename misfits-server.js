@@ -50,6 +50,13 @@ io.sockets.on('connection', function (socket) {
 		connectedTo: -1,
 		isTyping: false
 	};
+	
+	// count total and active users
+	peopleTotal++;
+	peopleActive++;
+	
+	// broadcast the counts to all clients
+	io.sockets.emit('online', peopleActive);
 
 	// connect the user to another if strangerQueue isn't empty
 	if (strangerQueue !== false) {
@@ -68,7 +75,7 @@ io.sockets.on('connection', function (socket) {
 	peopleActive++;
 	peopleTotal++;
 	console.log(timestamp(), peopleTotal, "connect");
-	io.sockets.emit('stats', {people: peopleActive});
+	io.sockets.emit('online', peopleActive);
 
 	socket.on("new", function () {
 		
@@ -85,7 +92,7 @@ io.sockets.on('connection', function (socket) {
 			strangerQueue = socket.id;
 		}
 		peopleActive++;
-		io.sockets.emit('stats', {people: peopleActive});
+		io.sockets.emit('online', peopleActive);
 	});
 	
 	// Conversation ended
@@ -103,7 +110,7 @@ io.sockets.on('connection', function (socket) {
 		}
 		socket.emit("disconn", {who: 1});
 		peopleActive -= 2;
-		io.sockets.emit('stats', {people: peopleActive});
+		io.sockets.emit('online', peopleActive);
 	});
 	socket.on('chat', function (message) {
 		if (users[socket.id].connectedTo !== -1 && sockets[users[socket.id].connectedTo]) {
@@ -118,10 +125,7 @@ io.sockets.on('connection', function (socket) {
 	});
 
 	socket.on("disconnect", function (err) {
-		
 		// Someone disconnected, ctoed or was kicked
-		//console.log(timestamp(), socket.id+" disconnected");
-
 		var connTo = (users[socket.id] && users[socket.id].connectedTo);
 		if (connTo === undefined) {
 			connTo = -1;
@@ -130,7 +134,7 @@ io.sockets.on('connection', function (socket) {
 			sockets[connTo].emit("disconn", {who: 2, reason: err && err.toString()});
 			users[connTo].connectedTo = -1;
 			users[connTo].isTyping = false;
-			peopleActive -= 2;
+			peopleActive--;
 		}
 
 		delete sockets[socket.id];
@@ -138,11 +142,14 @@ io.sockets.on('connection', function (socket) {
 
 		if (strangerQueue === socket.id || strangerQueue === connTo) {
 			strangerQueue = false;
-			peopleActive--;
 		}
+		peopleActive--;
 		peopleTotal--;
-		console.log(timestamp(), peopleTotal, "disconnect");
-		io.sockets.emit('stats', {people: peopleActive});
+		
+		// Broadcast updated count to all clients
+		io.sockets.emit('online', peopleActive);
+		console.log(timestamp(), peopleActive, "users online");
+		io.sockets.emit('online', peopleActive);
 		
 	});
 });
